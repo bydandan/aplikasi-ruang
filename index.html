@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Studio Regeneratif</title>
+<style>
+:root{--bg:#e6ebdd;--ink:#1c2541;--mut:#55607a;--teal:#0e7c7b;--gold:#e0a100;--red:#b23a48;--line:#b9c4ad;--card:#f4f7ee}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:16px 16px 80px}
+h1,h2,h3{font-family:Rockwell,"Roboto Slab",Georgia,serif;line-height:1.2;margin:.2em 0 .5em}h1{font-size:2rem}h2{font-size:1.35rem}h3{font-size:1.05rem}
+.bar{position:sticky;top:0;background:var(--ink);color:#fff;padding:8px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;z-index:5}
+.bar b{font-family:Rockwell,Georgia,serif}.bar .sp{flex:1}#tm{font-variant-numeric:tabular-nums;color:var(--gold)}
+button{font:inherit;border:2px solid var(--ink);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:4px;cursor:pointer}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:1px}
+button.p{background:var(--teal);border-color:var(--teal);color:#fff}.bar button{border-color:#fff;background:transparent;color:#fff;padding:4px 10px}
+button.on{background:var(--ink);color:#fff}button.V.on{background:var(--teal);border-color:var(--teal)}button.D.on{background:var(--gold);border-color:var(--gold);color:var(--ink)}button.M.on{background:var(--red);border-color:var(--red)}
+input,textarea{font:inherit;width:100%;padding:8px;border:2px solid var(--ink);border-radius:4px;background:#fff;color:var(--ink)}textarea{min-height:76px;resize:vertical}
+label{display:block;font-weight:600;margin:12px 0 4px}.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}
+.item{border-left:6px solid var(--line);padding:4px 0 8px 14px;margin:18px 0}.item.V{border-color:var(--teal)}.item.D{border-color:var(--gold)}.item.M{border-color:var(--red)}
+.clue{background:var(--card);padding:8px 10px;margin:6px 0;border-radius:4px}.mut{color:var(--mut)}.big{font:700 3.2rem Rockwell,Georgia,serif;letter-spacing:.12em;color:var(--teal)}
+.chips span{display:inline-block;background:var(--ink);color:#fff;padding:2px 10px;border-radius:99px;margin:2px 4px 2px 0;font-size:.9rem}
+table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}details{background:var(--card);padding:8px 12px;margin:8px 0;border-radius:4px}
+.err{color:var(--red);font-weight:600}
+</style></head><body><div id="app"></div>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const s=io(),$=i=>document.getElementById(i),D={};let st=null,me=JSON.parse(localStorage.me||'null'),hk=localStorage.hk?JSON.parse(localStorage.hk):null,err='';
+const esc=x=>String(x??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const KR=['Net-positif (dampak akhir positif)','Kelayakan di Indonesia','Kejelasan skema pengembalian','Indikator dampak dapat diverifikasi'];
+const FL=[['nama','Nama produk atau layanan'],['material','Material dan siklus hidup'],['skema','Skema dimiliki, digunakan, dirawat, dan dikembalikan'],['risiko','Satu risiko'],['insentif','Satu insentif'],['indikator','Indikator dampak yang dapat diverifikasi'],['uji','Uji Regeneratif: net-positif? ko-kreatif? lintas disiplin? sistem hidup apa yang diperkuat?']];
+const VL={V:'Terverifikasi',D:'Perlu data',M:'Menyesatkan'};
+const tx=(k,ev,p)=>{clearTimeout(D[k]);D[k]=setTimeout(()=>s.emit(ev,p),500)};
+s.on('connect',()=>{if(me)s.emit('join',me,r=>{if(r.err){localStorage.removeItem('me');me=null;err=r.err;render()}});else if(hk)s.emit('hostback',hk,r=>{if(r.err){localStorage.removeItem('hk');hk=null;render()}})});
+s.on('state',v=>{st=v;render()});
+function join(){const m={c:$('kode').value,team:$('tim').value,name:$('nama').value};s.emit('join',m,r=>{if(r.err){err=r.err;render()}else{err='';me={c:r.c,team:r.team,name:r.name};localStorage.me=JSON.stringify(me)}})}
+function mk(){s.emit('host',r=>{hk={c:r.c,key:r.key};localStorage.hk=JSON.stringify(hk)})}
+function keluar(){localStorage.removeItem('me');localStorage.removeItem('hk');location.reload()}
+function render(){const a=document.activeElement,id=a&&a.id,val=a&&a.value,pos=a&&a.selectionStart;$('app').innerHTML=html();if(id&&/TEXTAREA|INPUT/.test(a.tagName)){const e=$(id);if(e){e.value=val;e.focus();try{e.setSelectionRange(pos,pos)}catch(_){}}}tick()}
+function tick(){const e=$('tm');if(!e)return;const l=st&&st.end?Math.max(0,Math.round((st.end-Date.now())/1000)):null;e.textContent=l===null?'':Math.floor(l/60)+':'+String(l%60).padStart(2,'0')}
+setInterval(tick,1000);
+function html(){
+ if(!st)return `<main><h1>Studio Regeneratif</h1><p>Audit, rancang, uji: permainan kelas untuk modul Regenerative Design.</p><label for="kode">Kode ruang</label><input id="kode" inputmode="numeric" maxlength="4"><div class="row"><div><label for="tim">Nama tim</label><input id="tim" maxlength="24"></div><div><label for="nama">Nama Anda</label><input id="nama" maxlength="24"></div></div><p class="err">${esc(err)}</p><p><button class="p" onclick="join()">Masuk ruang</button></p><hr><p class="mut">Dosen:</p><button onclick="mk()">Buat ruang baru</button></main>`;
+ const h=st.host,top=`<div class="bar"><b>Ruang ${st.code}</b><span>${esc(st.nama)}</span><span id="tm"></span><span class="sp"></span>${h?`<button onclick="s.emit('adv',-1)">Ronde sebelumnya</button><button onclick="s.emit('ext')">+1 menit</button><button onclick="s.emit('adv',1)">Ronde berikutnya</button>`:esc(st.tnama||'')}<button onclick="keluar()">Keluar</button></div>`;
+ return top+'<main>'+(h?host():play())+'</main>'}
+function play(){const p=st.ph;if(!st.tnama)return '<p>Menyambungkan...</p>';
+ if(p===0)return `<h2>Menunggu dosen memulai</h2><p>Anda masuk sebagai ${esc(st.me)} di tim ${esc(st.tnama)}. Tim yang sudah masuk:</p><div class="chips">${st.tim.map(t=>`<span>${esc(t.nama)} (${t.n})</span>`).join('')}</div>`;
+ if(p===1)return `<h2>Gerbang: lima soal kilat</h2><p class="mut">Setiap anggota menjawab sendiri; skor tim adalah rata-rata anggota.</p>`+st.Q.map((q,i)=>`<div class="item"><h3>${i+1}. ${esc(q.q)}</h3>${q.o.map((o,j)=>`<button class="${st.myq[i]===j?'on':''}" style="display:block;margin:4px 0;text-align:left" onclick="s.emit('a0',{i:${i},a:${j}})">${esc(o)}</button>`).join('')}</div>`).join('');
+ if(p===2)return `<h2>Audit klaim</h2><p>Nilai tiap klaim, lalu tulis alasan memakai empat kriteria: sumber, tahun, cakupan, dan audit independen. Koin tim: <b>${st.coin}</b></p>`+st.C.map((c,i)=>`<div class="item ${st.a[i]||''}"><p>${esc(c.t)}</p><div class="row">${['V','D','M'].map(v=>`<button class="${v} ${st.a[i]===v?'on':''}" onclick="s.emit('v1',{i:${i},v:'${v}'})">${VL[v]}</button>`).join('')}</div>${c.clue?`<div class="clue">Petunjuk: ${esc(c.clue)}</div>`:`<button style="margin-top:6px" onclick="s.emit('clue',${i})" ${st.coin<1?'disabled':''}>Beli petunjuk (1 koin)</button>`}</div>`).join('')+`<label for="why">Alasan tim (minimal 40 karakter)</label><textarea id="why" oninput="tx('why','why',this.value)">${esc(st.why)}</textarea>`;
+ if(p===3){if(!st.target)return '<h2>Kartu Gugatan</h2><p>Ronde ini butuh minimal dua tim.</p>';return `<h2>Kartu Gugatan</h2><p>Tim Anda menggugat <b>${esc(st.target)}</b>. Pilih satu keputusan mereka di Ronde 1 yang menurut Anda keliru, lalu sebutkan buktinya (maks. 280 karakter).</p><textarea id="g" maxlength="280" oninput="tx('g','g',this.value)">${esc(st.g)}</textarea>${st.reply?`<div class="clue"><b>Jawaban ${esc(st.target)}:</b> ${esc(st.reply)}</div>`:''}<h3>Gugatan untuk tim Anda</h3>${st.gin?`<div class="clue"><b>${esc(st.attacker)}:</b> ${esc(st.gin)}</div><label for="rep">Jawaban tim Anda (maks. 280 karakter)</label><textarea id="rep" maxlength="280" oninput="tx('rep','rep',this.value)">${esc(st.rep)}</textarea>`:`<p class="mut">Belum ada gugatan masuk.</p>`}${vote()}`}
+ if(p===4)return `<h2>Studio Rancang</h2>${kartu(st.card)}`+FL.map(([k,l])=>`<label for="d_${k}">${l}</label><textarea id="d_${k}" oninput="tx('d${k}','dz',{k:'${k}',v:this.value})">${esc(st.d[k])}</textarea>`).join('');
+ if(p===5)return `<h2>Panel Uji</h2><p class="mut">Nilai rancangan tim lain dengan skala 1 sampai 5, lalu tulis satu saran perbaikan.</p>`+(st.rev.length?st.rev.map(r=>`<div class="item"><h3>${esc(r.label)}</h3>${kartu(r.card)}<dl>${FL.map(([k,l])=>`<dt><b>${l}</b></dt><dd>${esc((r.d||{})[k]||'-')}</dd>`).join('')}</dl>${KR.map((k,i)=>`<p>${k}<br>${[1,2,3,4,5].map(n=>`<button class="${r.r&&r.r.s[i]===n?'on':''}" onclick="s.emit('rate',{id:'${r.id}',k:${i},v:${n}})">${n}</button>`).join(' ')}</p>`).join('')}<label for="sr_${r.id}">Saran perbaikan</label><textarea id="sr_${r.id}" oninput="tx('sr${r.id}','saran',{id:'${r.id}',t:this.value})">${esc(r.r?r.r.saran:'')}</textarea></div>`).join(''):'<p>Belum ada rancangan untuk dinilai.</p>');
+ return board()}
+function vote(){const ex=st.ex||[],on=(e,d)=>st.vt&&st.vt.x===e.id&&st.vt.s===d?'on':'';return `<h2>Beri suara</h2><p class="mut">Satu suara per tim. Pilih satu argumen paling kuat dari tim lain: bukti jelas dan tepat sasaran. Tim penulisnya mendapat 2 poin.</p>`+(ex.length?ex.map((e,i)=>`<div class="item"><p><b>${esc(e.an)}</b> menggugat <b>${esc(e.tn)}</b></p><p>${esc(e.g||'(belum menulis gugatan)')}</p><button class="${on(e,'g')}" onclick="vt(${i},'g')" ${e.g?'':'disabled'}>Gugatan ini paling kuat</button><p>${esc(e.rep||'(belum ada jawaban)')}</p><button class="${on(e,'r')}" onclick="vt(${i},'r')" ${e.rep?'':'disabled'}>Jawaban ini paling kuat</button></div>`).join(''):'<p class="mut">Belum ada pertukaran yang bisa dinilai (butuh minimal 3 tim).</p>')}
+function vt(i,d){s.emit('vote',{x:st.ex[i].id,s:d})}
+function kartu(c){return c?`<div class="chips"><span>${esc(c.sektor)}</span><span>${esc(c.konteks)}</span><span>${esc(c.kendala)}</span><span>${esc(c.pola)}</span></div>`:''}
+function board(){const o=Object.values(st.skor).sort((a,b)=>b.total-a.total);return `<h2>Hasil</h2><table><tr><th>Tim</th><th>Auditor</th><th>Perancang</th><th>Penilai</th><th>Total</th></tr>${o.map(r=>`<tr><td>${esc(r.nama)}</td><td>${r.auditor}</td><td>${r.perancang}</td><td>${r.penilai}</td><td><b>${r.total}</b></td></tr>`).join('')}</table><p class="mut">Skor permainan hanya umpan balik. Nilai akademik berasal dari rubrik dosen atas Lembar Audit dan Lembar Rancangan.</p>`}
+function host(){const p=st.ph;let b=`<p class="mut">Bagikan kode <span class="big">${st.code}</span> kepada mahasiswa. Ronde dikendalikan lewat tombol di bilah atas.</p><h2>Tim (${st.mon.length})</h2>`;
+ b+=st.mon.map(t=>{const q=t.q,A=t.a.map((v,i)=>v?`${i+1}: ${VL[v]}`:'').filter(Boolean).join(', ');return `<details><summary><b>${esc(t.nama)}</b> (${t.anggota.length} anggota)</summary><p><b>Anggota:</b> ${esc(t.anggota.join(', '))}</p><p><b>Suara Ronde 2:</b> ${t.suara}</p><p><b>Audit:</b> ${esc(A||'-')}</p><p><b>Alasan:</b> ${esc(t.why||'-')}</p><p><b>Gugatan:</b> ${esc(t.g||'-')}</p><p><b>Jawaban:</b> ${esc(t.rep||'-')}</p><p><b>Rancangan:</b> ${esc(FL.map(([k,l])=>t.d[k]?l.split(':')[0]+': '+t.d[k]:'').filter(Boolean).join(' | ')||'-')}</p></details>`}).join('');
+ return b+(p>=5?board2():'')+`<p><button class="p" onclick="csv()">Unduh hasil (CSV)</button></p>`}
+function board2(){st.skor=st.skor||{};return board()}
+function csv(){const q=x=>'"'+String(x??'').replace(/"/g,'""').replace(/\n/g,' ')+'"',H=['tim','anggota','auditor','perancang','penilai','total','suara_ronde2','audit','alasan','gugatan','jawaban',...FL.map(f=>f[0])];
+ const rows=st.mon.map(t=>{const k=Object.values(st.skor).find(x=>x.nama===t.nama)||{};return [t.nama,t.anggota.join('; '),k.auditor,k.perancang,k.penilai,k.total,t.suara,t.a.map((v,i)=>(i+1)+':'+(v||'-')).join(' '),t.why,t.g,t.rep,...FL.map(([f])=>t.d[f])]});
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+[H,...rows].map(r=>r.map(q).join(',')).join('\n')],{type:'text/csv'}));a.download='hasil-studio-regeneratif.csv';a.click()}
+render();
+</script></body></html>
